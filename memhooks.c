@@ -5,6 +5,9 @@
 #define __USE_GNU
 #include <dlfcn.h>
 
+#define LOG_ALLOC(start,end) if (start) fprintf(stderr, "memhook-alloc %p %p\n", start, end)
+#define LOG_FREE(start) if (start) fprintf(stderr, "memhook-free %p\n", start)
+
 static malloc_t realMalloc = NULL;
 static realloc_t realRealloc = NULL;
 static calloc_t realCalloc = NULL;
@@ -42,9 +45,7 @@ void *malloc(size_t size) {
     }
 
     void *p = realMalloc(size);
-    if (p) {
-        fprintf(stderr, "alloc %p %p\n", p, p + size);
-    }
+    LOG_ALLOC(p, p + size);
     return p;
 }
 
@@ -53,13 +54,9 @@ void* realloc(void* ptr, size_t size) {
         __register_memhooks();
     }
 
-    if (ptr) {
-        fprintf(stderr, "free %p\n", ptr);
-    }
+    LOG_FREE(ptr);
     void *p = realRealloc(ptr, size);
-    if (p) {
-        fprintf(stderr, "alloc %p %p\n", p, p + size);
-    }
+    LOG_ALLOC(p, p + size);
     return p;
 }
 
@@ -69,9 +66,7 @@ void* calloc(size_t count, size_t size) {
     }
 
     void *p = realCalloc(count, size);
-    if (p) {
-        fprintf(stderr, "alloc %p %p\n", p, p + (count * size));
-    }
+    LOG_ALLOC(p, p + (count * size));
     return p;
 }
 
@@ -80,9 +75,7 @@ void free(void* ptr) {
         __register_memhooks();
     }
 
-    if (ptr) {
-        fprintf(stderr, "free %p\n", ptr);
-    }
+    LOG_FREE(ptr);
     realFree(ptr);
 }
 
@@ -93,9 +86,7 @@ void* memalign(size_t boundary, size_t size) {
     }
 
     void* p = realMemalign(boundary, size);
-    if (p) {
-        fprintf(stderr, "alloc %p %p\n", p, p + size);
-    }
+    LOG_ALLOC(p, p + size);
     return p;
 }
 
@@ -105,9 +96,7 @@ void* CXX_SYM_NEW(size_t size) {
     }
 
     void* p = realNew(size);
-    if (p) {
-        fprintf(stderr, "alloc %p %p\n", p, p + size);
-    }
+    LOG_ALLOC(p, p + size);
     return p;
 }
 
@@ -117,9 +106,7 @@ void* CXX_SYM_NEW_NOTHROW(size_t size) {
     }
 
     void* p = realNewNoThrow(size);
-    if (p) {
-        fprintf(stderr, "alloc %p %p\n", p, p + size);
-    }
+    LOG_ALLOC(p, p + size);
     return p;
 }
 
@@ -128,9 +115,7 @@ void CXX_SYM_DELETE(void *ptr) {
         __register_memhooks();
     }
 
-    if (ptr) {
-        fprintf(stderr, "free %p\n", ptr);
-    }
+    LOG_FREE(ptr);
     realDelete(ptr);
 }
 
@@ -139,8 +124,6 @@ void CXX_SYM_DELETE_NOTHROW(void *ptr) {
         __register_memhooks();
     }
 
-    if (ptr) {
-        fprintf(stderr, "free %p\n", ptr);
-    }
+    LOG_FREE(ptr);
     realDeleteNoThrow(ptr);
 }
