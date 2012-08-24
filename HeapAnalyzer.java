@@ -48,10 +48,12 @@ public class HeapAnalyzer {
         fis.close();
     }
 
-    public void dumpGraph() {
+    public void dumpDotGraph() {
+        System.out.println( "digraph heap {" );
         for (HeapObject obj : _heapObjects.values()) {
-            obj.dump();
+            obj.dumpDot();
         }
+        System.out.println( "}" );
     }
 
     public static void main( String[] args ) throws IOException {
@@ -68,6 +70,6 @@ public class HeapAnalyzer {
             ha.scanHeap( new File( "heapdump-" + i + ".bin" ), ranges.get( i ) );
         }
 
-        ha.dumpGraph();
+        ha.dumpDotGraph();
     }
 }

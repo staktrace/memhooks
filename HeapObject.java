@@ -35,11 +35,22 @@ class HeapObject implements Comparable<HeapObject> {
         return this == other;
     }
 
+    @Override public String toString() {
+        return "0x" + Long.toHexString( _startAddr );
+    }
+
     void dump() {
-        System.out.println( "Block 0x" + Long.toHexString( _startAddr ) + " size " + (_endAddr - _startAddr) );
+        System.out.println( "Block " + toString() + " size " + (_endAddr - _startAddr) );
         for (HeapObject target : _pointers) {
-            System.out.println( "    references block at 0x" + Long.toHexString( target._startAddr ) );
+            System.out.println( "    references block at " + target.toString() );
         }
         System.out.println();
+    }
+
+    void dumpDot() {
+        System.out.println( "    n" + toString() + ";" );
+        for (HeapObject target : _pointers) {
+            System.out.println( "    n" + toString() + " -> n" + target.toString() + ";" );
+        }
     }
 }
