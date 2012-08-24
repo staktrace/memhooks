@@ -22,6 +22,10 @@ class HeapObject implements Comparable<HeapObject> {
         }
     }
 
+    boolean isRoot() {
+        return _backRefs.isEmpty();
+    }
+
     @Override public int compareTo( HeapObject other ) {
         if (_startAddr == other._startAddr) {
             return (int)(_endAddr - other._endAddr);

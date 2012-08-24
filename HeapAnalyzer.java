@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,16 @@ public class HeapAnalyzer {
             }
         }
         fis.close();
+    }
+
+    public List<HeapObject> computeRoots() {
+        List<HeapObject> roots = new ArrayList<HeapObject>();
+        for (HeapObject obj : _heapObjects.values()) {
+            if (obj.isRoot()) {
+                roots.add( obj );
+            }
+        }
+        return roots;
     }
 
     public void dumpDotGraph() {
