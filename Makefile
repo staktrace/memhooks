@@ -1,2 +1,5 @@
-memhooks.so: memhooks.c rtsym.c rtsym.h Makefile
-	gcc -shared -fPIC -g -o memhooks.so memhooks.c rtsym.c
+memhooks-host.so: memhooks.c rtsym.c rtsym.h Makefile
+	gcc -shared -fPIC -g -o memhooks-host.so memhooks.c rtsym.c
+
+memhooks-arm.so: memhooks.c rtsym.c rtsym.h Makefile
+	$(HOME)/android/ndk/toolchains/arm-linux-androideabi-4.6.3/prebuilt/linux-x86/bin/arm-linux-androideabi-gcc -shared -fPIC -g -o memhooks-arm.so memhooks.c rtsym.c
