@@ -47,6 +47,10 @@ public class HookOutputParser {
         System.err.println( "HookOutputParser: completed parsing " + count + " hook output lines; " + _heapObjects.size() + " heap objects remaining" );
     }
 
+    public Map<Long, HeapObject> getHeapObjects() {
+        return _heapObjects;
+    }
+
     public List<MemoryRange> calculateMemoryRanges() {
         List<MemoryRange> ranges = new ArrayList<MemoryRange>();
         for (HeapObject obj : _heapObjects.values()) {
@@ -67,7 +71,7 @@ public class HookOutputParser {
             modified = false;
             for (int i = ranges.size() - 1; i >= 0; i--) {
                 MemoryRange toMerge = ranges.get( i );
-                for (int j = ranges.size() - 1; i >= 0; i--) {
+                for (int j = i - 1; i >= 0; i--) {
                     if (i == j) {
                         continue;
                     }
@@ -81,55 +85,6 @@ public class HookOutputParser {
         }
 
         return ranges;
-    }
-
-    private class HeapObject {
-        final long _startAddr;
-        final long _endAddr;
-
-        HeapObject( long startAddr, long endAddr ) {
-            _startAddr = startAddr;
-            _endAddr = endAddr;
-        }
-    }
-
-    private class MemoryRange {
-        private static final long MAX_GAP = 1024 * 1024;
-
-        private long _startAddr;
-        private long _endAddr;
-
-        MemoryRange( HeapObject obj ) {
-            _startAddr = obj._startAddr;
-            _endAddr = obj._endAddr;
-        }
-
-        private boolean merge( long otherStart, long otherEnd ) {
-            if (_startAddr - otherEnd >= MAX_GAP) {
-                return false;
-            } else if (otherStart - _endAddr >= MAX_GAP) {
-                return false;
-            }
-            if (otherStart < _startAddr) {
-                _startAddr = otherStart;
-            }
-            if (otherEnd > _endAddr) {
-                _endAddr = otherEnd;
-            }
-            return true;
-        }
-
-        boolean merge( HeapObject obj ) {
-            return merge( obj._startAddr, obj._endAddr );
-        }
-
-        boolean merge( MemoryRange range ) {
-            return merge( range._startAddr, range._endAddr );
-        }
-
-        @Override public String toString() {
-            return "MemoryRange: 0x" + Long.toHexString( _startAddr ) + " 0x" + Long.toHexString( _endAddr );
-        }
     }
 
     public static void main( String[] args ) throws IOException {
@@ -147,8 +102,8 @@ public class HookOutputParser {
         }
 
         List<MemoryRange> ranges = hop.calculateMemoryRanges();
-        for (MemoryRange range : ranges) {
-            System.out.println( range );
+        for (int i = 0; i < ranges.size(); i++) {
+            System.out.println( "dump binary memory heapdump-" + i + ".bin " + ranges.get( i ).toString() );
         }
     }
 }
