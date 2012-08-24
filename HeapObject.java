@@ -5,17 +5,20 @@ class HeapObject implements Comparable<HeapObject> {
     final long _startAddr;
     final long _endAddr;
 
-    private final Set<HeapObject> _pointers;
+    private final Set<HeapObject> _references;
+    private final Set<HeapObject> _backRefs;
 
     HeapObject( long startAddr, long endAddr ) {
         _startAddr = startAddr;
         _endAddr = endAddr;
-        _pointers = new TreeSet<HeapObject>();
+        _references = new TreeSet<HeapObject>();
+        _backRefs = new TreeSet<HeapObject>();
     }
 
-    void addPointer( HeapObject target ) {
-        if (target != null) {
-            _pointers.add( target );
+    void addReference( HeapObject reference ) {
+        if (reference != null) {
+            _references.add( reference );
+            reference._backRefs.add( this );
         }
     }
 
@@ -41,16 +44,16 @@ class HeapObject implements Comparable<HeapObject> {
 
     void dump() {
         System.out.println( "Block " + toString() + " size " + (_endAddr - _startAddr) );
-        for (HeapObject target : _pointers) {
-            System.out.println( "    references block at " + target.toString() );
+        for (HeapObject reference : _references) {
+            System.out.println( "    references block at " + reference.toString() );
         }
         System.out.println();
     }
 
     void dumpDot() {
         System.out.println( "    n" + toString() + ";" );
-        for (HeapObject target : _pointers) {
-            System.out.println( "    n" + toString() + " -> n" + target.toString() + ";" );
+        for (HeapObject reference : _references) {
+            System.out.println( "    n" + toString() + " -> n" + reference.toString() + ";" );
         }
     }
 }

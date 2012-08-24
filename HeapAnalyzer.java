@@ -41,7 +41,7 @@ public class HeapAnalyzer {
             int end = range.toOffset( align( obj._endAddr, false ) );
             while (start < end) {
                 long pointer = (buf.getInt( start ) & 0xFFFFFFFFL);
-                obj.addPointer( _heapObjects.get( pointer ) );
+                obj.addReference( _heapObjects.get( pointer ) );
                 start += ALIGNMENT;
             }
         }
