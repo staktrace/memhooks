@@ -32,6 +32,17 @@ class MemoryRange {
         return merge( range._startAddr, range._endAddr );
     }
 
+    boolean contains( HeapObject obj ) {
+        return (_startAddr <= obj._startAddr) && (_endAddr >= obj._endAddr);
+    }
+
+    int toOffset( long addr ) {
+        if (addr < _startAddr || addr > _endAddr) {
+            throw new IllegalArgumentException( "Address 0x" + Long.toHexString( addr ) + " not contained in range " + this.toString() );
+        }
+        return (int)(addr - _startAddr);
+    }
+
     @Override public String toString() {
         return "0x" + Long.toHexString( _startAddr ) + " 0x" + Long.toHexString( _endAddr );
     }

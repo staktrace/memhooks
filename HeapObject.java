@@ -1,7 +1,7 @@
 import java.util.Set;
 import java.util.TreeSet;
 
-class HeapObject {
+class HeapObject implements Comparable<HeapObject> {
     final long _startAddr;
     final long _endAddr;
 
@@ -14,7 +14,17 @@ class HeapObject {
     }
 
     void addPointer( HeapObject target ) {
-        _pointers.add( target );
+        if (target != null) {
+            _pointers.add( target );
+        }
+    }
+
+    @Override public int compareTo( HeapObject other ) {
+        if (_startAddr == other._startAddr) {
+            return (int)(_endAddr - other._endAddr);
+        } else {
+            return (int)(_startAddr - other._startAddr);
+        }
     }
 
     @Override public int hashCode() {
@@ -23,5 +33,13 @@ class HeapObject {
 
     @Override public boolean equals( Object other ) {
         return this == other;
+    }
+
+    void dump() {
+        System.out.println( "Block 0x" + Long.toHexString( _startAddr ) + " size " + (_endAddr - _startAddr) );
+        for (HeapObject target : _pointers) {
+            System.out.println( "    references block at 0x" + Long.toHexString( target._startAddr ) );
+        }
+        System.out.println();
     }
 }
