@@ -1,3 +1,4 @@
+import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -28,6 +29,14 @@ class HeapObject implements Comparable<HeapObject> {
 
     long size() {
         return _endAddr - _startAddr;
+    }
+
+    Iterator<HeapObject> references() {
+        return _references.iterator();
+    }
+
+    Iterator<HeapObject> backReferences() {
+        return _backRefs.iterator();
     }
 
     @Override public int compareTo( HeapObject other ) {

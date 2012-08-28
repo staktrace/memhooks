@@ -49,14 +49,23 @@ public class HeapAnalyzer {
         fis.close();
     }
 
-    public List<HeapObject> computeRoots() {
-        List<HeapObject> roots = new ArrayList<HeapObject>();
+    public List<Subgraph> computeSubgraphs() {
+        List<Subgraph> subgraphs = new ArrayList<Subgraph>();
         for (HeapObject obj : _heapObjects.values()) {
             if (obj.isRoot()) {
-                roots.add( obj );
+                boolean found = false;
+                for (Subgraph subgraph : subgraphs) {
+                    if (subgraph.contains( obj )) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (! found) {
+                    subgraphs.add( new Subgraph( obj ) );
+                }
             }
         }
-        return roots;
+        return subgraphs;
     }
 
     public void dumpDotGraph() {
@@ -81,6 +90,11 @@ public class HeapAnalyzer {
             ha.scanHeap( new File( "heapdump-" + i + ".bin" ), ranges.get( i ) );
         }
 
-        ha.dumpDotGraph();
+        List<Subgraph> subgraphs = ha.computeSubgraphs();
+        for (Subgraph subgraph : subgraphs) {
+            System.out.println( subgraph );
+        }
+
+        //ha.dumpDotGraph();
     }
 }
