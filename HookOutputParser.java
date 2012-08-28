@@ -44,7 +44,11 @@ public class HookOutputParser {
                 _heapObjects.put( addr, new HeapObject( addr, parseAddr( st.nextToken() ) ) );
             }
         }
-        System.err.println( "HookOutputParser: completed parsing " + count + " hook output lines; " + _heapObjects.size() + " heap objects remaining" );
+        long memUsed = 0;
+        for (HeapObject obj : _heapObjects.values()) {
+            memUsed += obj.size();
+        }
+        System.err.println( "HookOutputParser: completed parsing " + count + " hook output lines; " + _heapObjects.size() + " heap objects remaining using " + memUsed + " bytes" );
     }
 
     public Map<Long, HeapObject> getHeapObjects() {

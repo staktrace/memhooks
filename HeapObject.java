@@ -26,6 +26,10 @@ class HeapObject implements Comparable<HeapObject> {
         return _backRefs.isEmpty();
     }
 
+    long size() {
+        return _endAddr - _startAddr;
+    }
+
     @Override public int compareTo( HeapObject other ) {
         if (_startAddr == other._startAddr) {
             return (int)(_endAddr - other._endAddr);
