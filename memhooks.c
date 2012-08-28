@@ -5,8 +5,8 @@
 #define __USE_GNU
 #include <dlfcn.h>
 
-#define LOG_ALLOC(start,end) if (start) fprintf(stderr, "memhook-alloc %p %p\n", start, end)
-#define LOG_FREE(start) if (start) fprintf(stderr, "memhook-free %p\n", start)
+#define LOG_ALLOC(start,end) if (start) fprintf(stderr, "memhook-alloc %p %p %p\n", start, end, __builtin_return_address(0))
+#define LOG_FREE(start) if (start) fprintf(stderr, "memhook-free %p %p\n", start, __builtin_return_address(0))
 
 static malloc_t realMalloc = NULL;
 static realloc_t realRealloc = NULL;
