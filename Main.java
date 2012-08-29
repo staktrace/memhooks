@@ -16,8 +16,10 @@ class Main {
             return;
         }
 
+        File folder = new File( args[0] );
+
         HookOutputParser hop = new HookOutputParser();
-        BufferedReader br = new BufferedReader( new FileReader( args[0] + File.separator + "log" ) );
+        BufferedReader br = new BufferedReader( new FileReader( new File( folder, "log" ) ) );
         hop.parse( br );
         br.close();
 
@@ -26,7 +28,7 @@ class Main {
         List<MemoryRange> ranges = hop.calculateMemoryRanges();
         boolean fail = false;
         for (int i = 0; i < ranges.size(); i++) {
-            File f = new File( args[0] + File.separator + "heapdump-" + i + ".bin" );
+            File f = new File( folder, "heapdump-" + i + ".bin" );
             if (! f.exists()) {
                 fail = true;
                 System.out.println( "dump binary memory heapdump-" + i + ".bin " + ranges.get( i ).toString() );
@@ -51,12 +53,14 @@ class Main {
             }
         }
 
-        Map<HeapObject, HeapObject> dominators = biggest.calculateDominators();
-        Set<HeapObject> dominatorNodes = new HashSet<HeapObject>();
-        for (HeapObject dom : dominators.values()) {
-            dominatorNodes.add( dom );
-        }
-        System.out.println( biggest.toString() + " has " + dominatorNodes.size() + " dominator nodes" );
+        biggest.dumpHtml( folder );
+
+        //Map<HeapObject, HeapObject> dominators = biggest.calculateDominators();
+        //Set<HeapObject> dominatorNodes = new HashSet<HeapObject>();
+        //for (HeapObject dom : dominators.values()) {
+        //    dominatorNodes.add( dom );
+        //}
+        //System.out.println( biggest.toString() + " has " + dominatorNodes.size() + " dominator nodes" );
 
         //ha.dumpDotGraph( System.out );
     }

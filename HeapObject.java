@@ -1,3 +1,6 @@
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Set;
@@ -66,16 +69,38 @@ class HeapObject implements Comparable<HeapObject> {
         return this == other;
     }
 
-    @Override public String toString() {
+    String name() {
         return "0x" + Long.toHexString( _startAddr );
     }
 
+    @Override public String toString() {
+        return name();
+    }
+
     void dump( PrintStream out ) {
-        out.println( "Block " + toString() + " size " + (_endAddr - _startAddr) );
+        out.println( "Block " + name() + " size " + (_endAddr - _startAddr) );
         for (HeapObject reference : _references) {
-            out.println( "    references block at " + reference.toString() );
+            out.println( "    references block at " + reference.name() );
         }
         out.println();
+    }
+
+    void dumpHtml( File folder ) throws IOException {
+        PrintWriter pw = new PrintWriter( new File( folder, name() + ".html" ) );
+        pw.println( "<h1>Heap object " + toString() + "</h1>" );
+        pw.println( "<p>Start address: 0x" + Long.toHexString( _startAddr ) + "<br>End address: 0x" + Long.toHexString( _endAddr ) + "<br>Size: " + size() + " bytes</p>" );
+        pw.println( "<ul>References:<br>" );
+        for (Iterator<HeapObject> i = references(); i.hasNext();) {
+            HeapObject n = i.next();
+            pw.println( "<li><a href='" + n.name() + ".html'>" + n.toString() + "</a>" );
+        }
+        pw.println( "</ul><ul>Referenced by:<br>" );
+        for (Iterator<HeapObject> i = backReferences(); i.hasNext();) {
+            HeapObject n = i.next();
+            pw.println( "<li><a href='" + n.name() + ".html'>" + n.toString() + "</a>" );
+        }
+        pw.println( "</ul>" );
+        pw.close();
     }
 
     void dumpDot( PrintStream out ) {

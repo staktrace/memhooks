@@ -1,3 +1,6 @@
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -211,5 +214,26 @@ class Component {
 
     @Override public String toString() {
         return "Component with " + _nodes.size() + " nodes, " + _roots.size() + " roots, and " + size() + " bytes";
+    }
+
+    void dumpHtml( File folder ) throws IOException {
+        for (HeapObject node : _nodes) {
+            node.dumpHtml( folder );
+        }
+
+        PrintWriter pw = new PrintWriter( new File( folder, "index.html" ) );
+        pw.println( "<h1>True roots</h1>" );
+        for (HeapObject root : _roots) {
+            if (root.isRoot()) {
+                pw.println( "Root: <a href='" + root.name() + ".html'>" + root.toString() + "</a><br>" );
+            }
+        }
+        pw.println( "<h1>Artificial roots</h1>" );
+        for (HeapObject root : _roots) {
+            if (! root.isRoot()) {
+                pw.println( "Root: <a href='" + root.name() + ".html'>" + root.toString() + "</a><br>" );
+            }
+        }
+        pw.close();
     }
 }
