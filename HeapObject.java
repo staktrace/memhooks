@@ -9,11 +9,21 @@ class HeapObject implements Comparable<HeapObject> {
     private final Set<HeapObject> _references;
     private final Set<HeapObject> _backRefs;
 
+    private String _data;
+
     HeapObject( long startAddr, long endAddr ) {
         _startAddr = startAddr;
         _endAddr = endAddr;
         _references = new TreeSet<HeapObject>();
         _backRefs = new TreeSet<HeapObject>();
+    }
+
+    void setData( String data ) {
+        _data = data;
+    }
+
+    String data() {
+        return _data;
     }
 
     void addReference( HeapObject reference ) {
