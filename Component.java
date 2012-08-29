@@ -37,6 +37,38 @@ class Component {
                 }
             }
         }
+
+        // find extra root nodes. there can be cycles of nodes that point into
+        // the main are of the graph, and so while no individual node in the cycle
+        // returns true from isRoot(), we need to have at least one of the nodes
+        // in the cycle in our root set.
+        Set<HeapObject> unvisited = new HashSet<HeapObject>();
+        unvisited.addAll( _nodes );
+
+        Stack<HeapObject> dfsStack = new Stack<HeapObject>();
+        for (HeapObject root : _roots) {
+            dfsStack.push( root );
+        }
+        while (true) {
+            while (! dfsStack.empty()) {
+                HeapObject obj = dfsStack.pop();
+                if (! unvisited.contains( obj )) {
+                    continue;
+                }
+                unvisited.remove( obj );
+                for (Iterator<HeapObject> i = obj.references(); i.hasNext();) {
+                    dfsStack.push( i.next() );
+                }
+            }
+
+            // if we were unable to reach a node by DFS, make it a root and try again
+            if (unvisited.size() == 0) {
+                break;
+            }
+            HeapObject newRoot = unvisited.iterator().next();
+            _roots.add( newRoot );
+            dfsStack.push( newRoot );
+        }
     }
 
     private boolean add( HeapObject object ) {
@@ -125,7 +157,7 @@ class Component {
                         semiDominators.put( obj, semiDominators.get( u ) );
                     }
                 }
-                if (obj.isRoot()) {
+                if (_roots.contains( obj )) {   // we need to include artificial roots so we can't just use obj.isRoot()
                     HeapObject u = eval( forest, parents, semiDominators, _dummyRoot );
                     if (semiDominators.get( u ) < semiDominators.get( obj )) {
                         semiDominators.put( obj, semiDominators.get( u ) );
