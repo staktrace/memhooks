@@ -39,8 +39,6 @@ class Subgraph {
                 }
             }
         }
-
-        calculateDominators();
     }
 
     private boolean add( HeapObject object ) {
@@ -55,8 +53,10 @@ class Subgraph {
 
     private HeapObject eval( Set<HeapObject> forest, Map<HeapObject, HeapObject> parents, Map<HeapObject, Integer> semis, HeapObject obj ) {
         if (! forest.contains( obj )) {
+            // obj is the root of a tree in the forest
             return obj;
         }
+
         HeapObject best = obj;
         int bestSemi = semis.get( obj );
 
@@ -75,7 +75,7 @@ class Subgraph {
         return best;
     }
 
-    private Map<HeapObject, HeapObject> calculateDominators() {
+    public Map<HeapObject, HeapObject> calculateDominators() {
         Map<HeapObject, HeapObject> dominators = new HashMap<HeapObject, HeapObject>();
         Map<HeapObject, Integer> semiDominators = new HashMap<HeapObject, Integer>();
         List<HeapObject> numbered = new ArrayList<HeapObject>( _nodes.size() );
@@ -84,33 +84,37 @@ class Subgraph {
         semiDominators.put( _dummyRoot, numbered.size() );
         numbered.add( _dummyRoot );
 
-        {   // step 1, dfs
+        {   // step 1, DFS simulating "normal stack recursion" DFS from the paper
+            // (that's why I keep the parentStack)
             Stack<HeapObject> dfsStack = new Stack<HeapObject>();
+            Stack<HeapObject> parentStack = new Stack<HeapObject>();
             for (HeapObject root : _roots) {
                 dfsStack.push( root );
-                parents.put( root, _dummyRoot );
+                parentStack.push( _dummyRoot );
             }
             while (! dfsStack.empty()) {
                 HeapObject obj = dfsStack.pop();
+                HeapObject parent = parentStack.pop();
                 if (semiDominators.containsKey( obj )) {
                     continue;
                 }
 
                 semiDominators.put( obj, numbered.size() );
                 numbered.add( obj );
+                parents.put( obj, parent );
                 for (Iterator<HeapObject> i = obj.references(); i.hasNext();) {
                     HeapObject child = i.next();
                     if (parents.containsKey( child )) {
                         continue;
                     }
-                    parents.put( child, obj );
                     dfsStack.push( child );
+                    parentStack.push( obj );
                 }
             }
         }
 
         {   // steps 2 and 3
-            Set<HeapObject> forest = new HashSet<HeapObject>();
+            Set<HeapObject> forest = new HashSet<HeapObject>(); // forest.contains(x) means the edge (parents.get(x), x) is in the forest
             Map<HeapObject, Set<HeapObject>> buckets = new HashMap<HeapObject, Set<HeapObject>>();
 
             for (int i = numbered.size() - 1; i > 0; i--) {
@@ -123,6 +127,13 @@ class Subgraph {
                         semiDominators.put( obj, semiDominators.get( u ) );
                     }
                 }
+                if (obj.isRoot()) {
+                    HeapObject u = eval( forest, parents, semiDominators, _dummyRoot );
+                    if (semiDominators.get( u ) < semiDominators.get( obj )) {
+                        semiDominators.put( obj, semiDominators.get( u ) );
+                    }
+                }
+
                 HeapObject semiDom = numbered.get( semiDominators.get( obj ) );
                 Set<HeapObject> bucket = buckets.get( semiDom );
                 if (bucket == null) {
@@ -133,11 +144,14 @@ class Subgraph {
                 forest.add( obj );  // LINK
 
                 // step 3
-                for (HeapObject dominated : buckets.get( parents.get( obj ) )) {
-                    HeapObject u = eval( forest, parents, semiDominators, dominated );
-                    dominators.put( dominated, (semiDominators.get( u ) < semiDominators.get( dominated )) ? u : parents.get( obj ));
+                bucket = buckets.get( parents.get( obj ) );
+                if (bucket != null) {
+                    for (HeapObject dominated : bucket) {
+                        HeapObject u = eval( forest, parents, semiDominators, dominated );
+                        dominators.put( dominated, (semiDominators.get( u ) < semiDominators.get( dominated )) ? u : parents.get( obj ));
+                    }
+                    bucket.clear();
                 }
-                buckets.get( parents.get( obj ) ).clear();
             }
         }
 
