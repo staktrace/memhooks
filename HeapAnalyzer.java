@@ -1,5 +1,4 @@
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -77,17 +76,38 @@ public class HeapAnalyzer {
     }
 
     public static void main( String[] args ) throws IOException {
+        if (args.length == 0) {
+            System.err.println( "Usage: java HeapAnalyzer <folder>" );
+            System.err.println( "   <folder>/log should contain the memhooks log output" );
+            System.err.println( "   <folder>/heapdump-*.bin files should contain the heap dumps" );
+            return;
+        }
+
         HookOutputParser hop = new HookOutputParser();
-        BufferedReader br = new BufferedReader( new FileReader( args[0] ) );
+        BufferedReader br = new BufferedReader( new FileReader( args[0] + File.separator + "log" ) );
         hop.parse( br );
         br.close();
 
         HeapAnalyzer ha = new HeapAnalyzer( hop.getHeapObjects() );
 
         List<MemoryRange> ranges = hop.calculateMemoryRanges();
+        boolean fail = false;
         for (int i = 0; i < ranges.size(); i++) {
-            System.err.println( "Scanning " + ranges.get( i ).toString() + " from file heapdump-" + i + ".bin" );
-            ha.scanHeap( new File( "heapdump-" + i + ".bin" ), ranges.get( i ) );
+            File f = new File( args[0] + File.separator + "heapdump-" + i + ".bin" );
+            if (! f.exists()) {
+                fail = true;
+                System.out.println( "dump binary memory heapdump-" + i + ".bin " + ranges.get( i ).toString() );
+            } else if (f.length() < ranges.get( i ).size()) {
+                fail = true;
+                System.out.println( "Error: " + f + " is too short; expected at least " + ranges.get( i ).size() + " bytes" );
+            } else {
+                System.err.println( "Scanning " + ranges.get( i ).toString() + " from file heapdump-" + i + ".bin" );
+                ha.scanHeap( f, ranges.get( i ) );
+            }
+        }
+
+        if (fail) {
+            return;
         }
 
         List<Subgraph> subgraphs = ha.computeSubgraphs();

@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,25 +88,5 @@ public class HookOutputParser {
         }
 
         return ranges;
-    }
-
-    public static void main( String[] args ) throws IOException {
-        HookOutputParser hop = new HookOutputParser();
-        if (args.length > 0) {
-            for (String arg : args) {
-                BufferedReader br = new BufferedReader( new FileReader( arg ) );
-                hop.parse( br );
-                br.close();
-            }
-        } else {
-            BufferedReader br = new BufferedReader( new InputStreamReader( System.in ) );
-            hop.parse( br );
-            br.close();
-        }
-
-        List<MemoryRange> ranges = hop.calculateMemoryRanges();
-        for (int i = 0; i < ranges.size(); i++) {
-            System.out.println( "dump binary memory heapdump-" + i + ".bin " + ranges.get( i ).toString() );
-        }
     }
 }

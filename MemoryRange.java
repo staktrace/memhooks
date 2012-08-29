@@ -43,6 +43,10 @@ class MemoryRange {
         return (int)(addr - _startAddr);
     }
 
+    long size() {
+        return _endAddr - _startAddr;
+    }
+
     @Override public String toString() {
         return "0x" + Long.toHexString( _startAddr ) + " 0x" + Long.toHexString( _endAddr );
     }
