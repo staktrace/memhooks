@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -65,11 +66,11 @@ public class HeapAnalyzer {
         return components;
     }
 
-    public void dumpDotGraph() {
-        System.out.println( "digraph heap {" );
+    public void dumpDotGraph( PrintStream out ) {
+        out.println( "digraph heap {" );
         for (HeapObject obj : _heapObjects.values()) {
-            obj.dumpDot();
+            obj.dumpDot( out );
         }
-        System.out.println( "}" );
+        out.println( "}" );
     }
 }

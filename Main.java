@@ -58,6 +58,6 @@ class Main {
         }
         System.out.println( biggest.toString() + " has " + dominatorNodes.size() + " dominator nodes" );
 
-        //ha.dumpDotGraph();
+        //ha.dumpDotGraph( System.out );
     }
 }

@@ -1,3 +1,4 @@
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -69,18 +70,18 @@ class HeapObject implements Comparable<HeapObject> {
         return "0x" + Long.toHexString( _startAddr );
     }
 
-    void dump() {
-        System.out.println( "Block " + toString() + " size " + (_endAddr - _startAddr) );
+    void dump( PrintStream out ) {
+        out.println( "Block " + toString() + " size " + (_endAddr - _startAddr) );
         for (HeapObject reference : _references) {
-            System.out.println( "    references block at " + reference.toString() );
+            out.println( "    references block at " + reference.toString() );
         }
-        System.out.println();
+        out.println();
     }
 
-    void dumpDot() {
-        System.out.println( "    n" + toString() + ";" );
+    void dumpDot( PrintStream out ) {
+        out.println( "    n" + toString() + ";" );
         for (HeapObject reference : _references) {
-            System.out.println( "    n" + toString() + " -> n" + reference.toString() + ";" );
+            out.println( "    n" + toString() + " -> n" + reference.toString() + ";" );
         }
     }
 }
