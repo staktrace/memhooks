@@ -16,7 +16,7 @@ public class Test {
         }
     }
 
-    private void testSubgraph() {
+    private void testComponent() {
         // this is the flowgraph from the original paper by Lengauer and Tarjan
         // numbers are thrown in so that the DFS comes out the same way it does in the paper
         HeapObject r = new HeapObject( 2, 2 ); r.setData( "r" );
@@ -56,8 +56,8 @@ public class Test {
         r.addReference( b );
         r.addReference( c );
 
-        Subgraph graph = new Subgraph( a );
-        Map<HeapObject, HeapObject> dominators = graph.calculateDominators();
+        Component component = new Component( a );
+        Map<HeapObject, HeapObject> dominators = component.calculateDominators();
         check( dominators, a, r );
         check( dominators, b, r );
         check( dominators, c, r );
@@ -75,6 +75,6 @@ public class Test {
 
     public static void main( String[] args ) {
         Test t = new Test();
-        t.testSubgraph();
+        t.testComponent();
     }
 }

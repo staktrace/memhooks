@@ -46,23 +46,23 @@ public class HeapAnalyzer {
         fis.close();
     }
 
-    public List<Subgraph> computeSubgraphs() {
-        List<Subgraph> subgraphs = new ArrayList<Subgraph>();
+    public List<Component> computeComponents() {
+        List<Component> components = new ArrayList<Component>();
         for (HeapObject obj : _heapObjects.values()) {
             if (obj.isRoot()) {
                 boolean found = false;
-                for (Subgraph subgraph : subgraphs) {
-                    if (subgraph.contains( obj )) {
+                for (Component component : components) {
+                    if (component.contains( obj )) {
                         found = true;
                         break;
                     }
                 }
                 if (! found) {
-                    subgraphs.add( new Subgraph( obj ) );
+                    components.add( new Component( obj ) );
                 }
             }
         }
-        return subgraphs;
+        return components;
     }
 
     public void dumpDotGraph() {

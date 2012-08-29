@@ -9,17 +9,15 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
-class Subgraph {
+class Component {
     private final HeapObject _dummyRoot;
     private final Set<HeapObject> _roots;
     private final Set<HeapObject> _nodes;
-    private final Map<HeapObject, HeapObject> _dominators;
 
-    public Subgraph( HeapObject start ) {
+    public Component( HeapObject start ) {
         _dummyRoot = new HeapObject( 0, 0 );
         _roots = new HashSet<HeapObject>();
         _nodes = new HashSet<HeapObject>();
-        _dominators = new HashMap<HeapObject, HeapObject>();
 
         Queue<HeapObject> bfsQueue = new LinkedList<HeapObject>();
         if (add( start )) {
@@ -180,6 +178,6 @@ class Subgraph {
     }
 
     @Override public String toString() {
-        return "Subgraph with " + _nodes.size() + " nodes, " + _roots.size() + " roots, and " + size() + " bytes";
+        return "Component with " + _nodes.size() + " nodes, " + _roots.size() + " roots, and " + size() + " bytes";
     }
 }

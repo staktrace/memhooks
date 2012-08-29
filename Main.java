@@ -2,7 +2,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 class Main {
     public static void main( String[] args ) throws IOException {
@@ -40,10 +43,20 @@ class Main {
             return;
         }
 
-        List<Subgraph> subgraphs = ha.computeSubgraphs();
-        for (Subgraph subgraph : subgraphs) {
-            System.out.println( subgraph );
+        List<Component> components = ha.computeComponents();
+        Component biggest = null;
+        for (Component component : components) {
+            if (biggest == null || component.size() > biggest.size()) {
+                biggest = component;
+            }
         }
+
+        Map<HeapObject, HeapObject> dominators = biggest.calculateDominators();
+        Set<HeapObject> dominatorNodes = new HashSet<HeapObject>();
+        for (HeapObject dom : dominators.values()) {
+            dominatorNodes.add( dom );
+        }
+        System.out.println( biggest.toString() + " has " + dominatorNodes.size() + " dominator nodes" );
 
         //ha.dumpDotGraph();
     }
