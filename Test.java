@@ -57,7 +57,7 @@ public class Test {
         r.addReference( c );
 
         Component component = new Component( a );
-        Map<HeapObject, HeapObject> dominators = component.calculateDominators();
+        Map<HeapObject, HeapObject> dominators = component.getDominators();
         check( dominators, a, r );
         check( dominators, b, r );
         check( dominators, c, r );

@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -16,6 +17,7 @@ class Component {
     private final HeapObject _dummyRoot;
     private final Set<HeapObject> _roots;
     private final Set<HeapObject> _nodes;
+    private Map<HeapObject, HeapObject> _dominators;
 
     public Component( HeapObject start ) {
         _dummyRoot = new HeapObject( 0, 0 );
@@ -84,6 +86,13 @@ class Component {
         return false;
     }
 
+    public Map<HeapObject, HeapObject> getDominators() {
+        if (_dominators == null) {
+            _dominators = Collections.<HeapObject, HeapObject>unmodifiableMap( calculateDominators() );
+        }
+        return _dominators;
+    }
+
     private HeapObject eval( Set<HeapObject> forest, Map<HeapObject, HeapObject> parents, Map<HeapObject, Integer> semis, HeapObject obj ) {
         if (! forest.contains( obj )) {
             // obj is the root of a tree in the forest
@@ -108,7 +117,7 @@ class Component {
         return best;
     }
 
-    public Map<HeapObject, HeapObject> calculateDominators() {
+    private Map<HeapObject, HeapObject> calculateDominators() {
         Map<HeapObject, HeapObject> dominators = new HashMap<HeapObject, HeapObject>();
         Map<HeapObject, Integer> semiDominators = new HashMap<HeapObject, Integer>();
         List<HeapObject> numbered = new ArrayList<HeapObject>( _nodes.size() );

@@ -55,13 +55,6 @@ class Main {
 
         biggest.dumpHtml( folder );
 
-        //Map<HeapObject, HeapObject> dominators = biggest.calculateDominators();
-        //Set<HeapObject> dominatorNodes = new HashSet<HeapObject>();
-        //for (HeapObject dom : dominators.values()) {
-        //    dominatorNodes.add( dom );
-        //}
-        //System.out.println( biggest.toString() + " has " + dominatorNodes.size() + " dominator nodes" );
-
         //ha.dumpDotGraph( System.out );
     }
 }
