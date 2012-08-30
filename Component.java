@@ -209,6 +209,13 @@ class Component {
         return dominators;
     }
 
+    public void updateDominators() {
+        Map<HeapObject, HeapObject> doms = getDominators();
+        for (HeapObject dominated : doms.keySet()) {
+            dominated.setImmediateDominator( doms.get( dominated ) );
+        }
+    }
+
     boolean contains( HeapObject obj ) {
         return _nodes.contains( obj );
     }
@@ -231,18 +238,42 @@ class Component {
         }
 
         PrintWriter pw = new PrintWriter( new File( folder, "index.html" ) );
-        pw.println( "<h1>True roots</h1>" );
-        for (HeapObject root : _roots) {
-            if (root.isRoot()) {
-                pw.println( "Root: <a href='" + root.name() + ".html'>" + root.toString() + "</a><br>" );
-            }
-        }
-        pw.println( "<h1>Artificial roots</h1>" );
-        for (HeapObject root : _roots) {
-            if (! root.isRoot()) {
-                pw.println( "Root: <a href='" + root.name() + ".html'>" + root.toString() + "</a><br>" );
-            }
-        }
+        pw.println( "<h1>Component of size " + size() + "</h1>" );
+        HeapObject.dumpHtmlTable( pw, "True roots", new RootIterator( true ) );
+        HeapObject.dumpHtmlTable( pw, "Cyclical roots", new RootIterator( false ) );
+        HeapObject.dumpHtmlTable( pw, "Dominator roots", _dummyRoot.dominatedChildren() );
         pw.close();
+    }
+
+    private class RootIterator implements Iterator<HeapObject> {
+        private final boolean _trueRoots;
+        private final Iterator<HeapObject> _delegate;
+        private HeapObject _next;
+
+        RootIterator( boolean trueRoots ) {
+            _trueRoots = trueRoots;
+            _delegate = _roots.iterator();
+            findNext();
+        }
+
+        private void findNext() {
+            do {
+                _next = _delegate.hasNext() ? _delegate.next() : null;
+            } while (_next != null && _next.isRoot() != _trueRoots);
+        }
+
+        @Override public boolean hasNext() {
+            return (_next != null);
+        }
+
+        @Override public HeapObject next() {
+            HeapObject ret = _next;
+            findNext();
+            return ret;
+        }
+
+        @Override public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

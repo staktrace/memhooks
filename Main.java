@@ -52,6 +52,7 @@ class Main {
                 biggest = component;
             }
         }
+        biggest.updateDominators();
 
         biggest.dumpHtml( folder );
 

@@ -12,7 +12,9 @@ class HeapObject implements Comparable<HeapObject> {
 
     private final Set<HeapObject> _references;
     private final Set<HeapObject> _backRefs;
+    private final Set<HeapObject> _dominatedChildren;
 
+    private HeapObject _immediateDominator;
     private String _data;
 
     HeapObject( long startAddr, long endAddr ) {
@@ -20,6 +22,7 @@ class HeapObject implements Comparable<HeapObject> {
         _endAddr = endAddr;
         _references = new TreeSet<HeapObject>();
         _backRefs = new TreeSet<HeapObject>();
+        _dominatedChildren = new TreeSet<HeapObject>();
     }
 
     void setData( String data ) {
@@ -28,6 +31,11 @@ class HeapObject implements Comparable<HeapObject> {
 
     String data() {
         return _data;
+    }
+
+    void setImmediateDominator( HeapObject dom ) {
+        _immediateDominator = dom;
+        _immediateDominator._dominatedChildren.add( this );
     }
 
     void addReference( HeapObject reference ) {
@@ -45,12 +53,28 @@ class HeapObject implements Comparable<HeapObject> {
         return _endAddr - _startAddr;
     }
 
+    long deepSize() {
+        long total = size();
+        for (HeapObject dominated : _dominatedChildren) {
+            total += dominated.deepSize();
+        }
+        return total;
+    }
+
     Iterator<HeapObject> references() {
         return _references.iterator();
     }
 
     Iterator<HeapObject> backReferences() {
         return _backRefs.iterator();
+    }
+
+    Iterator<HeapObject> dominatedChildren() {
+        return _dominatedChildren.iterator();
+    }
+
+    Iterator<HeapObject> dominatorChain() {
+        return new DominatorChain( this );
     }
 
     @Override public int compareTo( HeapObject other ) {
@@ -85,21 +109,23 @@ class HeapObject implements Comparable<HeapObject> {
         out.println();
     }
 
+    static void dumpHtmlTable( PrintWriter out, String title, Iterator<HeapObject> items ) {
+        out.println( "<h2>" + title + "</h2><table border=1 width=100%><tr><th>Object</th><th>Size</th><th>Deep size</th></tr>" );
+        while (items.hasNext()) {
+            HeapObject item = items.next();
+            out.println( "<tr><td><a href='" + item.name() + ".html'>" + item.toString() + "</a></td><td>" + item.size() + "</td><td>" + item.deepSize() + "</td></tr>" );
+        }
+        out.println( "</table>" );
+    }
+
     void dumpHtml( File folder ) throws IOException {
         PrintWriter pw = new PrintWriter( new File( folder, name() + ".html" ) );
         pw.println( "<h1>Heap object " + toString() + "</h1>" );
         pw.println( "<p>Start address: 0x" + Long.toHexString( _startAddr ) + "<br>End address: 0x" + Long.toHexString( _endAddr ) + "<br>Size: " + size() + " bytes</p>" );
-        pw.println( "<ul>References:<br>" );
-        for (Iterator<HeapObject> i = references(); i.hasNext();) {
-            HeapObject n = i.next();
-            pw.println( "<li><a href='" + n.name() + ".html'>" + n.toString() + "</a>" );
-        }
-        pw.println( "</ul><ul>Referenced by:<br>" );
-        for (Iterator<HeapObject> i = backReferences(); i.hasNext();) {
-            HeapObject n = i.next();
-            pw.println( "<li><a href='" + n.name() + ".html'>" + n.toString() + "</a>" );
-        }
-        pw.println( "</ul>" );
+        dumpHtmlTable( pw, "References", references() );
+        dumpHtmlTable( pw, "Referenced by", backReferences() );
+        dumpHtmlTable( pw, "Dominates", dominatedChildren() );
+        dumpHtmlTable( pw, "Dominated by", dominatorChain() );
         pw.close();
     }
 
@@ -107,6 +133,27 @@ class HeapObject implements Comparable<HeapObject> {
         out.println( "    n" + toString() + ";" );
         for (HeapObject reference : _references) {
             out.println( "    n" + toString() + " -> n" + reference.toString() + ";" );
+        }
+    }
+
+    static class DominatorChain implements Iterator<HeapObject> {
+        private HeapObject _current;
+
+        DominatorChain( HeapObject start ) {
+            _current = start;
+        }
+
+        @Override public boolean hasNext() {
+            return _current._immediateDominator != null;
+        }
+
+        @Override public HeapObject next() {
+            _current = _current._immediateDominator;
+            return _current;
+        }
+
+        @Override public void remove() {
+            throw new UnsupportedOperationException();
         }
     }
 }
