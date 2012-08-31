@@ -89,8 +89,16 @@ class Component {
     public Map<HeapObject, HeapObject> getDominators() {
         if (_dominators == null) {
             _dominators = Collections.<HeapObject, HeapObject>unmodifiableMap( calculateDominators() );
+            for (HeapObject dominated : _dominators.keySet()) {
+                dominated.setImmediateDominator( _dominators.get( dominated ) );
+            }
         }
         return _dominators;
+    }
+
+    public DominatorTree getDominatorTree() {
+        getDominators();
+        return new DominatorTree( _dummyRoot );
     }
 
     private HeapObject eval( Set<HeapObject> forest, Map<HeapObject, HeapObject> parents, Map<HeapObject, Integer> semis, HeapObject obj ) {
@@ -209,13 +217,6 @@ class Component {
         return dominators;
     }
 
-    public void updateDominators() {
-        Map<HeapObject, HeapObject> doms = getDominators();
-        for (HeapObject dominated : doms.keySet()) {
-            dominated.setImmediateDominator( doms.get( dominated ) );
-        }
-    }
-
     boolean contains( HeapObject obj ) {
         return _nodes.contains( obj );
     }
@@ -242,6 +243,12 @@ class Component {
         HeapObject.dumpHtmlTable( pw, "True roots", new RootIterator( true ) );
         HeapObject.dumpHtmlTable( pw, "Cyclical roots", new RootIterator( false ) );
         HeapObject.dumpHtmlTable( pw, "Dominator roots", _dummyRoot.dominatedChildren() );
+        pw.println( "<h2>Dominator graph</h2>" );
+        pw.println( "<iframe src='graph.html' width='100%' height='100%'></iframe>" );
+        pw.close();
+
+        pw = new PrintWriter( new File( folder, "graph.html" ) );
+        getDominatorTree().dumpHtml( pw );
         pw.close();
     }
 

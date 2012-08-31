@@ -16,6 +16,19 @@ public class Test {
         }
     }
 
+    private void check( Map<HeapObject, Position> positions, HeapObject node, int x, int y ) {
+        try {
+            Position expected = new Position( x, y );
+            if (expected.equals( positions.get( node ) )) {
+                System.out.print( '.' );
+                return;
+            }
+            System.out.println( "F Expected " + expected + "; actual " + positions.get( node ) );
+        } catch (Exception e) {
+            System.out.print( 'E' );
+        }
+    }
+
     private void testComponent() {
         // this is the flowgraph from the original paper by Lengauer and Tarjan
         // numbers are thrown in so that the DFS comes out the same way it does in the paper
@@ -70,6 +83,14 @@ public class Test {
         check( dominators, j, g );
         check( dominators, k, r );
         check( dominators, l, d );
+        System.out.println();
+
+        DominatorTree tree = component.getDominatorTree();
+        Map<HeapObject, Position> positions = tree.drawGraph();
+        check( positions, r, 0, 1 );
+        check( positions, d, 0, 2 );
+        check( positions, c, 1, 2 );
+        check( positions, g, 1, 3 );
         System.out.println();
     }
 
