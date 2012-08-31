@@ -49,6 +49,10 @@ class HeapObject implements Comparable<HeapObject> {
         return _backRefs.isEmpty();
     }
 
+    boolean isDominator() {
+        return ! _dominatedChildren.isEmpty();
+    }
+
     long size() {
         return _endAddr - _startAddr;
     }
