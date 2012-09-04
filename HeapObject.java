@@ -16,6 +16,7 @@ class HeapObject implements Comparable<HeapObject> {
 
     private HeapObject _immediateDominator;
     private String _data;
+    private long _deepSizeCached;
 
     HeapObject( long startAddr, long endAddr ) {
         _startAddr = startAddr;
@@ -23,6 +24,7 @@ class HeapObject implements Comparable<HeapObject> {
         _references = new TreeSet<HeapObject>();
         _backRefs = new TreeSet<HeapObject>();
         _dominatedChildren = new TreeSet<HeapObject>();
+        _deepSizeCached = -1;
     }
 
     long startAddr() {
@@ -59,6 +61,7 @@ class HeapObject implements Comparable<HeapObject> {
     void setImmediateDominator( HeapObject dom ) {
         _immediateDominator = dom;
         _immediateDominator._dominatedChildren.add( this );
+        _immediateDominator._deepSizeCached = -1;
     }
 
     void addReference( HeapObject reference ) {
@@ -81,11 +84,14 @@ class HeapObject implements Comparable<HeapObject> {
     }
 
     long deepSize() {
-        long total = size();
-        for (HeapObject dominated : _dominatedChildren) {
-            total += dominated.deepSize();
+        if (_deepSizeCached < 0) {
+            long total = size();
+            for (HeapObject dominated : _dominatedChildren) {
+                total += dominated.deepSize();
+            }
+            _deepSizeCached = total;
         }
-        return total;
+        return _deepSizeCached;
     }
 
     Iterator<HeapObject> references() {

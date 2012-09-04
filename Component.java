@@ -18,11 +18,13 @@ class Component {
     private final Set<HeapObject> _roots;
     private final Set<HeapObject> _nodes;
     private Map<HeapObject, HeapObject> _dominators;
+    private long _sizeCached;
 
     public Component( HeapObject start ) {
         _dummyRoot = new HeapObject( 0, 0 );
         _roots = new HashSet<HeapObject>();
         _nodes = new HashSet<HeapObject>();
+        _sizeCached = -1;
 
         Queue<HeapObject> bfsQueue = new LinkedList<HeapObject>();
         if (add( start )) {
@@ -226,11 +228,14 @@ class Component {
     }
 
     public long size() {
-        long size = 0;
-        for (HeapObject node : _nodes) {
-            size += node.size();
+        if (_sizeCached < 0) {
+            long size = 0;
+            for (HeapObject node : _nodes) {
+                size += node.size();
+            }
+            _sizeCached = size;
         }
-        return size;
+        return _sizeCached;
     }
 
     @Override public String toString() {
@@ -238,6 +243,8 @@ class Component {
     }
 
     void dumpHtml( File folder ) throws IOException {
+        getDominators();
+
         for (HeapObject node : _nodes) {
             node.dumpHtml( folder );
         }
