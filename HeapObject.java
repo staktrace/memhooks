@@ -33,6 +33,21 @@ class HeapObject implements Comparable<HeapObject> {
         return _endAddr;
     }
 
+    HeapObject split( long pointer ) {
+        if (!_references.isEmpty() || !_backRefs.isEmpty() || !_dominatedChildren.isEmpty() || _immediateDominator != null) {
+            throw new IllegalStateException();
+        }
+        if (pointer < _startAddr || pointer >= _endAddr) {
+            throw new IllegalArgumentException();
+        } else if (pointer == _startAddr) {
+            return null;
+        }
+
+        HeapObject subitem = new HeapObject( pointer, _endAddr );
+        _endAddr = pointer;
+        return subitem;
+    }
+
     void setData( String data ) {
         _data = data;
     }
