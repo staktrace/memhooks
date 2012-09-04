@@ -38,12 +38,13 @@ public class HookOutputParser {
             st.nextToken();
             long addr = parseAddr( st.nextToken() );
             if (ixFree >= 0) {
-                _heapObjects.remove( addr );
+                if (_heapObjects.remove( addr ) == null) {
+                    System.out.println( "Error: freeing nonexistent block at 0x" + Long.toHexString( addr ) );
+                }
             } else {
-                if (_heapObjects.get( addr ) != null) {
+                if (_heapObjects.put( addr, new HeapObject( addr, parseAddr( st.nextToken() ) ) ) != null) {
                     System.out.println( "Error: reallocating block at 0x" + Long.toHexString( addr ) );
                 }
-                _heapObjects.put( addr, new HeapObject( addr, parseAddr( st.nextToken() ) ) );
             }
         }
         long memUsed = 0;
