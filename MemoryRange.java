@@ -5,8 +5,8 @@ class MemoryRange {
     private long _endAddr;
 
     MemoryRange( HeapObject obj ) {
-        _startAddr = obj._startAddr;
-        _endAddr = obj._endAddr;
+        _startAddr = obj.startAddr();
+        _endAddr = obj.endAddr();
     }
 
     private boolean merge( long otherStart, long otherEnd ) {
@@ -25,7 +25,7 @@ class MemoryRange {
     }
 
     boolean merge( HeapObject obj ) {
-        return merge( obj._startAddr, obj._endAddr );
+        return merge( obj.startAddr(), obj.endAddr() );
     }
 
     boolean merge( MemoryRange range ) {
@@ -33,7 +33,7 @@ class MemoryRange {
     }
 
     boolean contains( HeapObject obj ) {
-        return (_startAddr <= obj._startAddr) && (_endAddr >= obj._endAddr);
+        return (_startAddr <= obj.startAddr()) && (_endAddr >= obj.endAddr());
     }
 
     int toOffset( long addr ) {

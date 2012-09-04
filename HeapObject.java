@@ -7,8 +7,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 class HeapObject implements Comparable<HeapObject> {
-    final long _startAddr;
-    final long _endAddr;
+    private final long _startAddr;
+    private long _endAddr;
 
     private final Set<HeapObject> _references;
     private final Set<HeapObject> _backRefs;
@@ -23,6 +23,14 @@ class HeapObject implements Comparable<HeapObject> {
         _references = new TreeSet<HeapObject>();
         _backRefs = new TreeSet<HeapObject>();
         _dominatedChildren = new TreeSet<HeapObject>();
+    }
+
+    long startAddr() {
+        return _startAddr;
+    }
+
+    long endAddr() {
+        return _endAddr;
     }
 
     void setData( String data ) {
