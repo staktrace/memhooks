@@ -14,9 +14,19 @@ public class HeapAnalyzer {
     private static final int ALIGNMENT = 4;
 
     private final Map<Long, HeapObject> _heapObjects;
+    private final AddressTreeNode _addressTreeRoot;
 
     public HeapAnalyzer( Map<Long, HeapObject> heapObjects ) {
         _heapObjects = heapObjects;
+        AddressTreeNode root = null;
+        for (HeapObject obj : heapObjects.values()) {
+            if (root == null) {
+                root = new AddressTreeNode( obj );
+            } else {
+                root.insert( obj );
+            }
+        }
+        _addressTreeRoot = root;
     }
 
     private long align( long value, boolean roundUp ) {
@@ -27,24 +37,60 @@ public class HeapAnalyzer {
         return aligned;
     }
 
-    public void scanHeap( File dumpFile, MemoryRange range ) throws IOException {
-        FileInputStream fis = new FileInputStream( dumpFile );
-        FileChannel fc = fis.getChannel();
-        MappedByteBuffer buf = fc.map( FileChannel.MapMode.READ_ONLY, 0, dumpFile.length() );
-        buf.order( MEMORY );
-        for (HeapObject obj : _heapObjects.values()) {
-            if (! range.contains( obj )) {
-                continue;
+    private void visitDumpFiles( List<File> dumpFiles, List<MemoryRange> ranges, PointerVisitor visitor ) throws IOException {
+        for (int i = 0; i < dumpFiles.size(); i++) {
+            File dumpFile = dumpFiles.get( i );
+            MemoryRange range = ranges.get( i );
+
+            FileInputStream fis = new FileInputStream( dumpFile );
+            FileChannel fc = fis.getChannel();
+            MappedByteBuffer buf = fc.map( FileChannel.MapMode.READ_ONLY, 0, dumpFile.length() );
+            buf.order( MEMORY );
+            for (HeapObject obj : _heapObjects.values()) {
+                if (! range.contains( obj )) {
+                    continue;
+                }
+                int start = range.toOffset( align( obj.startAddr(), true ) );
+                int end = range.toOffset( align( obj.endAddr(), false ) );
+                while (start < end) {
+                    long pointer = (buf.getInt( start ) & 0xFFFFFFFFL);
+                    visitor.pointer( obj, pointer );
+                    start += ALIGNMENT;
+                }
             }
-            int start = range.toOffset( align( obj._startAddr, true ) );
-            int end = range.toOffset( align( obj._endAddr, false ) );
-            while (start < end) {
-                long pointer = (buf.getInt( start ) & 0xFFFFFFFFL);
-                obj.addReference( _heapObjects.get( pointer ) );
-                start += ALIGNMENT;
-            }
+            fis.close();
         }
-        fis.close();
+    }
+
+    private static interface PointerVisitor {
+        public void pointer( HeapObject obj, long pointer );
+    }
+
+    public void scanHeap( List<File> dumpFiles, List<MemoryRange> ranges ) throws IOException {
+        // first pass: split heap objects based on pointers that to middle of them
+        final List<HeapObject> subItems = new ArrayList<HeapObject>();
+        visitDumpFiles( dumpFiles, ranges, new PointerVisitor() {
+            @Override public void pointer( HeapObject obj, long pointer ) {
+                HeapObject target = _addressTreeRoot.find( pointer );
+                if (target != null) {
+                    HeapObject subItem = target.split( pointer );
+                    if (subItem != null) {
+                        subItems.add( subItem );
+                        _addressTreeRoot.insert( subItem );
+                    }
+                }
+            }
+        } );
+        for (HeapObject subItem : subItems) {
+            _heapObjects.put( subItem.startAddr(), subItem );
+        }
+
+        // second pass: build reference graph
+        visitDumpFiles( dumpFiles, ranges, new PointerVisitor() {
+            @Override public void pointer( HeapObject obj, long pointer ) {
+                obj.addReference( _heapObjects.get( pointer ) );
+            }
+        } );
     }
 
     public List<Component> computeComponents() {
