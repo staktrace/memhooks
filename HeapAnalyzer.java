@@ -81,6 +81,7 @@ public class HeapAnalyzer {
                 }
             }
         } );
+        System.err.println( "Split " + subItems.size() + " heap objects during scanning" );
         for (HeapObject subItem : subItems) {
             _heapObjects.put( subItem.startAddr(), subItem );
         }

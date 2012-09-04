@@ -221,6 +221,10 @@ class Component {
         return _nodes.contains( obj );
     }
 
+    public int nodeCount() {
+        return _nodes.size();
+    }
+
     public long size() {
         long size = 0;
         for (HeapObject node : _nodes) {

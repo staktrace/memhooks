@@ -53,12 +53,14 @@ class Main {
 
         System.err.println( "Computing components..." );
         List<Component> components = ha.computeComponents();
+        System.err.println( "Found " + components.size() + " components; finding biggest..." );
         Component biggest = null;
         for (Component component : components) {
             if (biggest == null || component.size() > biggest.size()) {
                 biggest = component;
             }
         }
+        System.err.println( "Found largest component with " + biggest.nodeCount() + " nodes and " + biggest.size() + " bytes" );
 
         System.err.println( "Generating HTML..." );
         biggest.dumpHtml( folder );
