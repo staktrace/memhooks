@@ -40,6 +40,9 @@ public class HookOutputParser {
             if (ixFree >= 0) {
                 _heapObjects.remove( addr );
             } else {
+                if (_heapObjects.get( addr ) != null) {
+                    System.err.println( "Error: reallocating block at 0x" + Long.toHexString( addr ) );
+                }
                 _heapObjects.put( addr, new HeapObject( addr, parseAddr( st.nextToken() ) ) );
             }
         }

@@ -90,10 +90,21 @@ class HeapObject implements Comparable<HeapObject> {
     }
 
     @Override public int compareTo( HeapObject other ) {
-        if (_startAddr == other._startAddr) {
-            return (int)(_endAddr - other._endAddr);
+        if (_startAddr < other._startAddr) {
+            if (_endAddr > other._startAddr) {
+                System.err.println( "Error; overlapping objects found: " + this + " and " + other );
+            }
+            return -1;
+        } else if (_startAddr > other._startAddr) {
+            if (other._endAddr > _startAddr) {
+                System.err.println( "Error; overlapping objects found: " + this + " and " + other );
+            }
+            return 1;
         } else {
-            return (int)(_startAddr - other._startAddr);
+            if (other._endAddr != _endAddr) {
+                System.err.println( "Error: two objects with same start but different ends found: " + this + " and " + other );
+            }
+            return 0;
         }
     }
 
@@ -102,7 +113,10 @@ class HeapObject implements Comparable<HeapObject> {
     }
 
     @Override public boolean equals( Object other ) {
-        return this == other;
+        if (other instanceof HeapObject) {
+            return compareTo( (HeapObject)other ) == 0;
+        }
+        return false;
     }
 
     String name() {
