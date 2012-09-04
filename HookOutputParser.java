@@ -30,7 +30,7 @@ public class HookOutputParser {
                 continue;
             }
             if ((ixAlloc >= 0) && (ixFree >= 0)) {
-                System.err.println( "Error parsing output line: " + s );
+                System.out.println( "Error parsing output line: " + s );
                 continue;
             }
             count++;
@@ -41,7 +41,7 @@ public class HookOutputParser {
                 _heapObjects.remove( addr );
             } else {
                 if (_heapObjects.get( addr ) != null) {
-                    System.err.println( "Error: reallocating block at 0x" + Long.toHexString( addr ) );
+                    System.out.println( "Error: reallocating block at 0x" + Long.toHexString( addr ) );
                 }
                 _heapObjects.put( addr, new HeapObject( addr, parseAddr( st.nextToken() ) ) );
             }

@@ -51,6 +51,7 @@ class Main {
         System.err.println( "Scanning heap..." );
         ha.scanHeap( files, ranges );
 
+        System.err.println( "Computing components..." );
         List<Component> components = ha.computeComponents();
         Component biggest = null;
         for (Component component : components) {
@@ -59,6 +60,7 @@ class Main {
             }
         }
 
+        System.err.println( "Generating HTML..." );
         biggest.dumpHtml( folder );
 
         //ha.dumpDotGraph( System.out );
