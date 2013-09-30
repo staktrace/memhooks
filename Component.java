@@ -253,7 +253,7 @@ class Component {
         pw.println( "<h1>Component of size " + size() + "</h1>" );
         HeapObject.dumpHtmlTable( pw, "True roots", new RootIterator( true ) );
         HeapObject.dumpHtmlTable( pw, "Cyclical roots", new RootIterator( false ) );
-        HeapObject.dumpHtmlTable( pw, "Dominator roots", _dummyRoot.dominatedChildren() );
+        HeapObject.dumpHtmlTable( pw, "Dominator roots", new DominatorFilter( _dummyRoot.dominatedChildren() ) );
         pw.println( "<h2>Dominator graph</h2>" );
         pw.println( "<iframe src='graph.html' width='100%' height='100%'></iframe>" );
         pw.close();
@@ -278,6 +278,36 @@ class Component {
             do {
                 _next = _delegate.hasNext() ? _delegate.next() : null;
             } while (_next != null && _next.isRoot() != _trueRoots);
+        }
+
+        @Override public boolean hasNext() {
+            return (_next != null);
+        }
+
+        @Override public HeapObject next() {
+            HeapObject ret = _next;
+            findNext();
+            return ret;
+        }
+
+        @Override public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private class DominatorFilter implements Iterator<HeapObject> {
+        private final Iterator<HeapObject> _delegate;
+        private HeapObject _next;
+
+        DominatorFilter( Iterator<HeapObject> delegate ) {
+            _delegate = delegate;
+            findNext();
+        }
+
+        private void findNext() {
+            do {
+                _next = _delegate.hasNext() ? _delegate.next() : null;
+            } while (_next != null && _next.isDominator());
         }
 
         @Override public boolean hasNext() {
