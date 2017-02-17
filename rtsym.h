@@ -51,12 +51,17 @@ extern void* rtsym_resolve(const char *sz_symbol);
 #endif
 
 #if __GXX_ABI_VERSION == 1002
-#define CXX_SYM_NEW              _Znwj
-#define CXX_SYM_NEW_NOTHROW      _ZnwjRKSt9nothrow_t
-#define CXX_SYM_DELETE_NOTHROW   _ZdlPvRKSt9nothrow_t
-#define CXX_SYM_DELETE           _ZdlPv
+#  define CXX_SYM_NEW              _Znwj
+#  define CXX_SYM_NEW_NOTHROW      _ZnwjRKSt9nothrow_t
+#  define CXX_SYM_DELETE_NOTHROW   _ZdlPvRKSt9nothrow_t
+#  define CXX_SYM_DELETE           _ZdlPv
+#elif __GXX_ABI_VERSION == 1009
+#  define CXX_SYM_NEW              _Znwm
+#  define CXX_SYM_NEW_NOTHROW      _ZnwmRKSt9nothrow_t
+#  define CXX_SYM_DELETE_NOTHROW   _ZdlPvRKSt9nothrow_t
+#  define CXX_SYM_DELETE           _ZdlPv
 #else
-#error Unsupported ABI
+#  error Unsupported ABI
 #endif
 
 #define SYM_STRING(S) #S
