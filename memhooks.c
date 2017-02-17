@@ -22,6 +22,9 @@ static free_t realDelete = NULL;
 static free_t realDeleteNoThrow = NULL;
 
 void __register_memhooks() {
+    static int _registered = 0;
+    if (_registered) return;
+    _registered = 1;
     realMalloc = rtsym_resolve("malloc");
     CHECK_FOUND(realMalloc);
     realRealloc = rtsym_resolve("realloc");
@@ -42,9 +45,12 @@ void __register_memhooks() {
     CHECK_OPTIONAL(realDeleteNoThrow);
 }
 
-void *malloc(size_t size) {
+void* malloc(size_t size) {
     if (realMalloc == NULL) {
         __register_memhooks();
+        if (realMalloc == NULL) {
+            return NULL;
+        }
     }
 
     void *p = realMalloc(size);
@@ -55,6 +61,9 @@ void *malloc(size_t size) {
 void* realloc(void* ptr, size_t size) {
     if (realRealloc == NULL) {
         __register_memhooks();
+        if (realRealloc == NULL) {
+            return NULL;
+        }
     }
 
     LOG_FREE(ptr);
@@ -66,6 +75,9 @@ void* realloc(void* ptr, size_t size) {
 void* calloc(size_t count, size_t size) {
     if (realCalloc == NULL) {
         __register_memhooks();
+        if (realCalloc == NULL) {
+            return NULL;
+        }
     }
 
     void *p = realCalloc(count, size);
@@ -76,6 +88,9 @@ void* calloc(size_t count, size_t size) {
 void free(void* ptr) {
     if (realFree == NULL) {
         __register_memhooks();
+        if (realFree == NULL) {
+            return;
+        }
     }
 
     LOG_FREE(ptr);
@@ -86,6 +101,9 @@ void free(void* ptr) {
 void* memalign(size_t boundary, size_t size) {
     if (realMemalign == NULL) {
         __register_memhooks();
+        if (realMemalign == NULL) {
+            return NULL;
+        }
     }
 
     void* p = realMemalign(boundary, size);
@@ -96,6 +114,9 @@ void* memalign(size_t boundary, size_t size) {
 void* CXX_SYM_NEW(size_t size) {
     if (realNew == NULL) {
         __register_memhooks();
+        if (realNew == NULL) {
+            return NULL;
+        }
     }
 
     void* p = realNew(size);
@@ -106,6 +127,9 @@ void* CXX_SYM_NEW(size_t size) {
 void* CXX_SYM_NEW_NOTHROW(size_t size) {
     if (realNewNoThrow == NULL) {
         __register_memhooks();
+        if (realNewNoThrow == NULL) {
+            return NULL;
+        }
     }
 
     void* p = realNewNoThrow(size);
@@ -116,6 +140,9 @@ void* CXX_SYM_NEW_NOTHROW(size_t size) {
 void CXX_SYM_DELETE(void *ptr) {
     if (realDelete == NULL) {
         __register_memhooks();
+        if (realDelete == NULL) {
+            return;
+        }
     }
 
     LOG_FREE(ptr);
@@ -125,6 +152,9 @@ void CXX_SYM_DELETE(void *ptr) {
 void CXX_SYM_DELETE_NOTHROW(void *ptr) {
     if (realDeleteNoThrow == NULL) {
         __register_memhooks();
+        if (realDeleteNoThrow == NULL) {
+            return;
+        }
     }
 
     LOG_FREE(ptr);
